@@ -23,7 +23,10 @@ public:
     void setEnv(std::string mountPoint, ulong repeats, ulong size);
     void run();
     
+    static const ulong GiB = 1024*1024*1024;
     static const ulong MiB = 1024*1024;
+    static const ulong KiB = 1024;
+    
     
 private:
     std::string mountPoint;
