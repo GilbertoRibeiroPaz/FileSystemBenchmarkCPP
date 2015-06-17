@@ -7,8 +7,9 @@
 
 
 #include <iostream>
+#include <string.h>
 #include "Benchmark.h"
-#include <map>
+#include "ParametersParser.h"
 using namespace std;
 
 /*
@@ -16,8 +17,16 @@ using namespace std;
  */
 int main(int argc, char** argv) {
     
+    ParametersParser pp(argc, argv);
+    string mp = pp.getMountPoint();
+    int repeats = pp.getRepeats();
+    int timesMag = pp.getTimesMag();
+    Benchmark::BlockMagType magType = pp.getMagType();
+    
+    
+    
     Benchmark bnk;
-    bnk.setEnv(".", 1, Benchmark::MiB);
+    bnk.setEnv(mp, repeats, timesMag, magType);
     bnk.run();
     
     

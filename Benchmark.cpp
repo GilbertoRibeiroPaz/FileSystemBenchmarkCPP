@@ -15,7 +15,7 @@ Benchmark::Benchmark(){
     
     this->mountPoint = "";
     this->repeats = 0;
-    this->size = 0;
+    this->sizeRepeats = 0;
     
     envIsAlreadySet = false;
 }
@@ -26,11 +26,12 @@ Benchmark::Benchmark(){
  * @param repeats
  * @param size
  */
-Benchmark::Benchmark(std::string mountPoint, ulong repeats, ulong size) {
+Benchmark::Benchmark(std::string mountPoint, ulong repeats, ulong size, BlockMagType type) {
     
     this->mountPoint = mountPoint;
     this->repeats = repeats;
-    this->size = size;
+    this->sizeRepeats = size;
+    this->blockType = type;
     
     envIsAlreadySet = true;
 }
@@ -43,7 +44,8 @@ Benchmark::Benchmark(const Benchmark& orig) {
     this->reset();
     this->mountPoint = orig.mountPoint;
     this->repeats = orig.repeats;
-    this->size = orig.size;    
+    this->sizeRepeats = orig.sizeRepeats;    
+    this->blockType = orig.blockType;
 }
 
 /**
@@ -61,12 +63,13 @@ Benchmark::~Benchmark() {
  * @param repeats
  * @param size
  */
-void Benchmark::setEnv(std::string mountPoint, ulong repeats, ulong size){
+void Benchmark::setEnv(std::string mountPoint, ulong repeats, ulong size, BlockMagType type){
     this->reset();
     
     this->mountPoint = mountPoint;
     this->repeats = repeats;
-    this->size = size;    
+    this->sizeRepeats = size;    
+    this->blockType = type;
     
     envIsAlreadySet = true;
 }
@@ -78,67 +81,122 @@ void Benchmark::setEnv(std::string mountPoint, ulong repeats, ulong size){
 void Benchmark::run(){
     
     this->reset();
-    
+    this->setMagTestSize();
     if(this->envIsAlreadySet){
+        sizeRWInMiB = (this->sizeRepeats * this->magSize) / Benchmark::MiB;
         this->writeSequential();
-        this->readSequential();        
+        this->readSequential();
+        printf("Total Time: %.10f\n", this->totalTime);
     }
+}
+
+/**
+ * Get results produced by benchmark
+ * @return result
+ */
+std::string Benchmark::getResults(){
+    return this->results;
 }
 
 /**
  * Set throughput and total time to zero.
  */
 void Benchmark::reset(){
+    results = "";
     readRandomThroughput = readSequentialThroughput = 0;
     writeRandomThroughtput = writeSequentialThroughput = 0;
     totalTime = 0;
+    
+}
+
+/**
+ * Get selected magnitude and set max size.
+ */
+void Benchmark::setMagTestSize(){
+    if(blockType == Benchmark::MagGiB){
+        this->magSize = Benchmark::GiB;        
+    }
+    else if(blockType == Benchmark::MagMiB){
+        this->magSize = Benchmark::MiB;
+    }
+    else if(blockType == Benchmark::MagKiB){
+        this->magSize = Benchmark::KiB;
+    }
+    else {
+        this->magSize = Benchmark::KiB;
+    }
 }
 
 /**
  * Logic to write sequential and register
  */
 void Benchmark::writeSequential(){
+    
     // open the file
     const char* filePath = std::string(this->mountPoint + "/sequential").c_str();
+    double byByteCounter = 0;
     
+    Timer MiBTimer;    
     std::ofstream file(filePath, std::ios::binary);
     
-    
     timer.start();
+
     // Write to file using bytes as index
-    for(ulong idx = 0; idx < this->size; idx++){
-        file.put(0);
-    }   
-    
+    for(ulong magIdx = 0; magIdx < this->sizeRepeats; magIdx++){
+        
+        for(ulong byteIdx = 0; byteIdx < this->magSize; byteIdx++){
+
+            MiBTimer.start();
+            //write byte
+            file.put(0);
+            MiBTimer.stop();
+            MiBTimer.AddTo(byByteCounter);
+        }
+        
+    }
+
     timer.stop();
     
-    file.close();
+    // Get time of this action
+    this->totalTime += timer.getDuration();
     
-    printf("Writing to %s in %f seconds the amount of %d\n", filePath, timer.getDuration(), this->size);
+    file.close();    
+    
+    cout << "Write duration: " << timer << " seconds" << endl;        
+    printf("Medium Time: %.15f MiB/s\n", sizeRWInMiB / timer.getDuration());
 }
 
 void Benchmark::readSequential(){
     // open the file
     const char* filePath = std::string(this->mountPoint + "/sequential").c_str();
-    std::fstream file(filePath, std::ios::binary);
-    
     double byByteCounter = 0;
     
-    timer.start();
-    Timer byteTimer;
+    Timer MiBTimer;
+    
+    std::fstream file(filePath, std::ios::binary);
+    
+    timer.start();    
     
     // Read file less the size
-    for(ulong idx = 0; idx < this->size; idx++){
-        byteTimer.start();
-        file.get();
-        byteTimer.stop();
-        byteTimer.AddTo(byByteCounter);
+    for(ulong magIdx = 0; magIdx < this->sizeRepeats; magIdx++){
+        for(ulong byteIdx = 0, MiBCounter = 0; byteIdx < this->magSize; byteIdx++, MiBCounter++){
+            MiBTimer.start();
+            // Read byte
+            file.get();
+            MiBTimer.stop();
+            MiBTimer.AddTo(byByteCounter);
+        }        
     }
     
     timer.stop();
     
+    // Get time of this action
+    this->totalTime += timer.getDuration();
+    
     file.close();
     
-    printf("Reading from %s in %f seconds the amount of %d\n", filePath, timer.getDuration(), this->size);
-    printf("%f MiB/s ", byByteCounter);
+    cout << "Read duration: " << timer << " seconds" << endl;
+    //cout << "Medium time: " << byByteCounter / Benchmark::MiB << " MiB/s" << endl;
+    
+    printf("Medium Time: %.15f MiB/s\n", sizeRWInMiB / timer.getDuration());
 }

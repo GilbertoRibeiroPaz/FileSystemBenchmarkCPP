@@ -5,6 +5,7 @@
                    displayName="Header Files"
                    projectFiles="true">
       <itemPath>Benchmark.h</itemPath>
+      <itemPath>ParametersParser.h</itemPath>
       <itemPath>Timer.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -44,6 +45,8 @@
       </item>
       <item path="Benchmark.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="ParametersParser.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="README.md" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Timer.h" ex="false" tool="3" flavor2="0">
@@ -74,6 +77,8 @@
       <item path="Benchmark.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Benchmark.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="ParametersParser.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="README.md" ex="false" tool="3" flavor2="0">
       </item>

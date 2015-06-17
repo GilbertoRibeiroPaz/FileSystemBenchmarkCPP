@@ -38,7 +38,7 @@ public:
 
         seconds  = endTime.tv_sec  - startTime.tv_sec;
         useconds = endTime.tv_usec - startTime.tv_usec;
-
+        
         duration = seconds + useconds/1000000.0;
 
         this->lastDuration = duration;
@@ -50,6 +50,16 @@ public:
     
     void AddTo(double& counter){
         counter += lastDuration;
+    }
+    
+    friend std::ostream& operator<<(std::ostream& os, Timer& t){
+        os << t.lastDuration;
+        return os;
+    }
+    
+    friend double operator/(Timer& t1, double d){
+        if(d == 0) return 0;
+        return t1.lastDuration / d;
     }
 };
 
