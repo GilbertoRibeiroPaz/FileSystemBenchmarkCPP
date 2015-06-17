@@ -1,4 +1,3 @@
-usage: ./filesystembenchmark <mount point> <repeats> <size in bytes or --magnitude=[KiB|MiB|GiB] --amount=[time of the magnitude]>
+usage: ./filesystembenchmark <mount point> <repeats> <size and magnitude>
 
-eg.:    ./filesystembenchmark ~/ 5 1048576
-.       ./filesystembenchmark ~/ 5 --magnitude=GiB --amount=5
+eg.:    ./filesystembenchmark ~/ 5 1M
