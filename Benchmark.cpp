@@ -137,10 +137,14 @@ void Benchmark::writeSequential(){
     double byByteCounter = 0;
     
     Timer MiBTimer;    
-    std::ofstream file(filePath, std::ios::binary);
+    // c++ ofstream is slow. Why?
+    //std::ofstream file(filePath, std::ios::binary);
+    FILE* file = fopen(filePath, "wb");
+    //int fd = open(filePath,)
+    char* bfr = new char[1];
     
     timer.start();
-
+    
     // Write to file using bytes as index
     for(ulong magIdx = 0; magIdx < this->sizeRepeats; magIdx++){
         
@@ -148,22 +152,25 @@ void Benchmark::writeSequential(){
 
             MiBTimer.start();
             //write byte
-            file.put(0);
+            //file.write(bfr, 1);
+            fwrite(bfr, 1, 1, file);
             MiBTimer.stop();
-            MiBTimer.AddTo(byByteCounter);
+            byByteCounter += MiBTimer;
+ 
         }
         
     }
-
-    timer.stop();
     
+    timer.stop();
+    //file.close();
+    fclose(file);
     // Get time of this action
     this->totalTime += timer.getDuration();
     
-    file.close();    
+    
     
     cout << "Write duration: " << timer << " seconds" << endl;        
-    printf("Medium Time: %.15f MiB/s\n", sizeRWInMiB / timer.getDuration());
+    printf("Throughput: %f MiB/s\n", sizeRWInMiB / timer.getDuration());
 }
 
 void Benchmark::readSequential(){
@@ -174,19 +181,23 @@ void Benchmark::readSequential(){
     Timer MiBTimer;
     
     std::fstream file(filePath, std::ios::binary);
+    char* bfr = new char[1];
     
-    timer.start();    
+    timer.start();
+    
     
     // Read file less the size
     for(ulong magIdx = 0; magIdx < this->sizeRepeats; magIdx++){
         for(ulong byteIdx = 0, MiBCounter = 0; byteIdx < this->magSize; byteIdx++, MiBCounter++){
             MiBTimer.start();
             // Read byte
-            file.get();
+            file.read(bfr, 1);
             MiBTimer.stop();
-            MiBTimer.AddTo(byByteCounter);
+            byByteCounter += MiBTimer;
         }        
     }
+    
+
     
     timer.stop();
     
@@ -198,5 +209,5 @@ void Benchmark::readSequential(){
     cout << "Read duration: " << timer << " seconds" << endl;
     //cout << "Medium time: " << byByteCounter / Benchmark::MiB << " MiB/s" << endl;
     
-    printf("Medium Time: %.15f MiB/s\n", sizeRWInMiB / timer.getDuration());
+    printf("Medium Time: %.15f MiB/s\n", sizeRWInMiB / byByteCounter);
 }

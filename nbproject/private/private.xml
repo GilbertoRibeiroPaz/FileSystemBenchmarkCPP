@@ -10,6 +10,9 @@
             <file>file:/home/gilberto/Projects/FileSystemThroughputBenchmark/Benchmark.h</file>
             <file>file:/home/gilberto/Projects/FileSystemThroughputBenchmark/Benchmark.cpp</file>
             <file>file:/home/gilberto/Projects/FileSystemThroughputBenchmark/main.cpp</file>
+            <file>file:/home/gilberto/Projects/FileSystemThroughputBenchmark/README.md</file>
+            <file>file:/home/gilberto/Projects/FileSystemThroughputBenchmark/ParametersParser.h</file>
+            <file>file:/home/gilberto/Projects/FileSystemThroughputBenchmark/Timer.h</file>
         </group>
     </open-files>
 </project-private>

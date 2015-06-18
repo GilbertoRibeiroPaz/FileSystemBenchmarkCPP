@@ -61,6 +61,11 @@ public:
         if(d == 0) return 0;
         return t1.lastDuration / d;
     }
+    
+    friend double operator+=(double& d, Timer& t){
+        d += t.lastDuration;
+        return d;
+    }
 };
 
 #endif	/* TIMER_H */
