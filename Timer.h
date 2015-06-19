@@ -62,6 +62,11 @@ public:
         return t1.lastDuration / d;
     }
     
+    friend double operator/(ulong d, Timer& t1){
+        if(t1.lastDuration == 0) return 0;
+        return d / t1.lastDuration;
+    }
+    
     friend double operator+=(double& d, Timer& t){
         d += t.lastDuration;
         return d;

@@ -11,6 +11,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <time.h>
+#include <stdlib.h>
 #include "Timer.h"
 
 
@@ -51,12 +53,21 @@ private:
     Timer timer;
     
     std::string results;
+    const std::string TestFileName = "/testfile";
+    char* testFilePath;
     
     void reset();
+    void setTestFilePath();
     void setMagTestSize();
+    
+    // Prepare file to operations
+    void prepareFile();
+    
+    //Read and write
     void writeSequential();
     void readSequential();
-    
+    void writeRandom();
+    void readRandom();
     
     bool envIsAlreadySet;
     

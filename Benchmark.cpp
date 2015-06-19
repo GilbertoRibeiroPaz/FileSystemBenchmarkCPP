@@ -8,6 +8,8 @@
 #include "Benchmark.h"
 #include "Timer.h"
 
+using namespace std;
+
 /**
  * Default constructor
  */
@@ -82,8 +84,11 @@ void Benchmark::run(){
     
     this->reset();
     this->setMagTestSize();
+    this->setTestFilePath();
+    
     if(this->envIsAlreadySet){
         sizeRWInMiB = (this->sizeRepeats * this->magSize) / Benchmark::MiB;
+        this->prepareFile();
         this->writeSequential();
         this->readSequential();
         printf("Total Time: %.10f\n", this->totalTime);
@@ -110,6 +115,13 @@ void Benchmark::reset(){
 }
 
 /**
+ * Set the the file path to write the test.
+ */
+void Benchmark::setTestFilePath(){
+    this->testFilePath = (char*)(this->mountPoint + this->TestFileName).c_str();
+}
+
+/**
  * Get selected magnitude and set max size.
  */
 void Benchmark::setMagTestSize(){
@@ -128,20 +140,29 @@ void Benchmark::setMagTestSize(){
 }
 
 /**
+ * Write the file total size before start the operations.
+ */
+void Benchmark::prepareFile(){
+    FILE* filed = fopen64(this->testFilePath, "wb");
+    
+    fwrite(filed, 1, this->magSize * this->sizeRepeats, filed);
+    
+    fclose(filed);
+}
+
+/**
  * Logic to write sequential and register
  */
 void Benchmark::writeSequential(){
     
-    // open the file
-    const char* filePath = std::string(this->mountPoint + "/sequential").c_str();
+        
     double byByteCounter = 0;
-    
-    Timer MiBTimer;    
-    // c++ ofstream is slow. Why?
-    //std::ofstream file(filePath, std::ios::binary);
-    FILE* file = fopen(filePath, "wb");
-    //int fd = open(filePath,)
     char* bfr = new char[1];
+    Timer MiBTimer;
+    ofstream file;
+    
+    // open the file    
+    file.open(this->testFilePath, ios::binary);
     
     timer.start();
     
@@ -152,8 +173,7 @@ void Benchmark::writeSequential(){
 
             MiBTimer.start();
             //write byte
-            //file.write(bfr, 1);
-            fwrite(bfr, 1, 1, file);
+            file.write(bfr, 1);
             MiBTimer.stop();
             byByteCounter += MiBTimer;
  
@@ -162,29 +182,26 @@ void Benchmark::writeSequential(){
     }
     
     timer.stop();
-    //file.close();
-    fclose(file);
+    file.close();
+    
     // Get time of this action
     this->totalTime += timer.getDuration();
     
-    
-    
     cout << "Write duration: " << timer << " seconds" << endl;        
-    printf("Throughput: %f MiB/s\n", sizeRWInMiB / timer.getDuration());
+    printf("Throughput: %f MiB/s\n", sizeRWInMiB / timer);
 }
 
 void Benchmark::readSequential(){
-    // open the file
-    const char* filePath = std::string(this->mountPoint + "/sequential").c_str();
+    
     double byByteCounter = 0;
-    
-    Timer MiBTimer;
-    
-    std::fstream file(filePath, std::ios::binary);
     char* bfr = new char[1];
+    Timer MiBTimer;
+    fstream file;
+    
+    // open the file
+    file.open(this->testFilePath, ios::binary);    
     
     timer.start();
-    
     
     // Read file less the size
     for(ulong magIdx = 0; magIdx < this->sizeRepeats; magIdx++){
@@ -197,8 +214,6 @@ void Benchmark::readSequential(){
         }        
     }
     
-
-    
     timer.stop();
     
     // Get time of this action
@@ -209,5 +224,49 @@ void Benchmark::readSequential(){
     cout << "Read duration: " << timer << " seconds" << endl;
     //cout << "Medium time: " << byByteCounter / Benchmark::MiB << " MiB/s" << endl;
     
-    printf("Medium Time: %.15f MiB/s\n", sizeRWInMiB / byByteCounter);
+    printf("Throughput: %f MiB/s\n", sizeRWInMiB / timer);
+}
+
+
+void Benchmark::writeRandom(){
+    srand( time(NULL));
+        
+    double byByteCounter = 0;
+    char* bfr = new char[1];
+    Timer MiBTimer;
+    ofstream file;
+    
+    // open the file    
+    file.open(this->testFilePath, ios::binary);
+        
+    timer.start();
+    
+    // Write to file using bytes as index
+    for(ulong magIdx = 0; magIdx < this->sizeRepeats; magIdx++){
+        
+        for(ulong byteIdx = 0; byteIdx < this->magSize; byteIdx++){
+
+            MiBTimer.start();
+            //write byte
+            file.write(bfr, 1);
+            
+            MiBTimer.stop();
+            byByteCounter += MiBTimer;
+ 
+        }
+        
+    }
+    
+    timer.stop();
+    file.close();
+    
+    // Get time of this action
+    this->totalTime += timer.getDuration();
+    
+    cout << "Write duration: " << timer << " seconds" << endl;        
+    printf("Throughput: %f MiB/s\n", sizeRWInMiB / timer);    
+}
+
+void Benchmark::readRandom(){
+    
 }

@@ -51,21 +51,23 @@ public:
 
         for(int idx = 0; idx < lastParamenterSize; idx++){
             char c = lastParamenter[idx];
-            if (c == 'k' || c == 'K'){
+            if ( (c == 'k' || c == 'K') && idx != 0){
                 this->magType = Benchmark::MagKiB;
             }
-            else if (c == 'm' || c == 'M'){
+            else if ( (c == 'm' || c == 'M') && idx != 0){
                 this->magType = Benchmark::MagMiB;
             }
-            else if (c == 'g' || c == 'G'){
+            else if ( (c == 'g' || c == 'G') && idx != 0){
                 this->magType = Benchmark::MagGiB;
             }
             else if ( isdigit(c)){
                 this->timesMag *= 10;
                 this->timesMag += (c -'0');
             }
-            else{
-
+            else {
+                cout << "Error on 3th parameter. Format accepted: (count)[k|K|m|M|g|G]" << endl;
+                cout << "E.G.: " << argv[0] << " ~/ 1 1G" << endl;
+                exit(EXIT_FAILURE);
             }
         }
     }
