@@ -152,8 +152,9 @@ void Benchmark::prepareFile(){
     ofstream fileWrite(this->testFilePath, ios::binary);   
     timer.start();
     
-    // Write to file using bytes as index
-    /*
+    // Write to file using bytes as index. Pass OK
+    // Real results too.
+    
     for(ulong magIdx = 0; magIdx < this->sizeRepeats; magIdx++){        
         for(ulong byteIdx = 0; byteIdx < this->magSize; byteIdx++){
             //write byte
@@ -162,14 +163,15 @@ void Benchmark::prepareFile(){
             //timer.stop();
         }
     }
-    */
+    
     
     // Test write with buffered stream. Pass OK
     // Real results
+    /*
     ulong bufferSize = this->sizeRepeats * this->magSize;
     const char* buffer = new char[bufferSize];
     fileWrite.write(buffer, bufferSize);
-    
+    */
     timer.stop();
     cout << "Time to create a " << this->sizeRWInMiB << "MiB file: " << timer.getDuration() << " seconds" << endl;
     cout << "Throughput: " << this->sizeRWInMiB / timer << "MiB/s" << endl;
