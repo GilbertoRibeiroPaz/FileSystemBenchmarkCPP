@@ -17,6 +17,7 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>Benchmark.cpp</itemPath>
+      <itemPath>Timer.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -49,6 +50,8 @@
       <item path="ParametersParser.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Timer.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Timer.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -84,6 +87,8 @@
       <item path="ParametersParser.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="README.md" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Timer.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Timer.h" ex="false" tool="3" flavor2="0">
       </item>

@@ -49,18 +49,20 @@ public:
         char* lastParamenter = argv[3];
         int lastParamenterSize = strlen(lastParamenter);
 
-        for(int idx = 0; idx < lastParamenterSize; idx++){
+        for(int idx = 0; idx < lastParamenterSize; idx++) {
+            
             char c = lastParamenter[idx];
-            if ( (c == 'k' || c == 'K') && idx != 0){
+            
+            if ( (c == 'k' || c == 'K') && idx != 0) {
                 this->magType = Benchmark::MagKiB;
             }
-            else if ( (c == 'm' || c == 'M') && idx != 0){
+            else if ( (c == 'm' || c == 'M') && idx != 0) {
                 this->magType = Benchmark::MagMiB;
             }
-            else if ( (c == 'g' || c == 'G') && idx != 0){
+            else if ( (c == 'g' || c == 'G') && idx != 0) {
                 this->magType = Benchmark::MagGiB;
             }
-            else if ( isdigit(c)){
+            else if ( isdigit(c)) {
                 this->timesMag *= 10;
                 this->timesMag += (c -'0');
             }

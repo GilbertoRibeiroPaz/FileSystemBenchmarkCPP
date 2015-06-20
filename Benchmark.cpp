@@ -88,14 +88,12 @@ void Benchmark::run(){
     
     if(this->envIsAlreadySet){
         sizeRWInMiB = (this->sizeRepeats * this->magSize) / Benchmark::MiB;
-        this->prepareFile();
-        /*
-        
+               
         this->writeSequential();   
         this->readSequential();
         this->writeRandom();
         this->readRandom();
-         */
+        
         printf("Total Time: %.10f\n", this->totalTime);
     }
 }
@@ -131,173 +129,205 @@ void Benchmark::setTestFilePath(){
  */
 void Benchmark::setMagTestSize(){
     if(blockType == Benchmark::MagGiB){
-        this->magSize = Benchmark::GiB;        
+        this->magSize = Benchmark::GiB;   
+        this->gibs = this->sizeRepeats;
+        this->mibs = 1024;
+        this->kibs = 1024;
     }
     else if(blockType == Benchmark::MagMiB){
         this->magSize = Benchmark::MiB;
+        this->gibs = 1;
+        this->mibs = this->sizeRepeats;
+        this->kibs = 1024;
     }
     else if(blockType == Benchmark::MagKiB){
         this->magSize = Benchmark::KiB;
+        this->gibs = 1;
+        this->mibs = 1;
+        this->kibs = this->sizeRepeats;               
     }
     else {
         this->magSize = Benchmark::KiB;
+        this->gibs = 1;
+        this->mibs = 1;
+        this->kibs = this->sizeRepeats;
     }
 }
 
-/**
- * Write the file total size before start the operations.
- */
-void Benchmark::prepareFile(){
-    
-    ofstream fileWrite(this->testFilePath, ios::binary);   
-    timer.start();
-    
-    // Write to file using bytes as index. Pass OK
-    // Real results too.
-    
-    for(ulong magIdx = 0; magIdx < this->sizeRepeats; magIdx++){        
-        for(ulong byteIdx = 0; byteIdx < this->magSize; byteIdx++){
-            //write byte
-            //timer.start();
-            fileWrite.put('0');
-            //timer.stop();
-        }
-    }
-    
-    
-    // Test write with buffered stream. Pass OK
-    // Real results
-    /*
-    ulong bufferSize = this->sizeRepeats * this->magSize;
-    const char* buffer = new char[bufferSize];
-    fileWrite.write(buffer, bufferSize);
-    */
-    timer.stop();
-    cout << "Time to create a " << this->sizeRWInMiB << "MiB file: " << timer.getDuration() << " seconds" << endl;
-    cout << "Throughput: " << this->sizeRWInMiB / timer << "MiB/s" << endl;
-    fileWrite.close();
-    
-}
 
 /**
  * Logic to write sequential and register
  */
 void Benchmark::writeSequential(){
-    
         
-    double byByteCounter = 0;
-    
-    Timer MiBTimer;
+    // file handler
     ofstream file;
     
     // open the file    
     file.open( this->testFilePath, ios::binary);
     
+    // Start measure
     timer.start();
     
+    // Test write with timer by MiB
+    
     // Write to file using bytes as index
-    for(ulong magIdx = 0; magIdx < this->sizeRepeats; magIdx++){
-        
-        for(ulong byteIdx = 0; byteIdx < this->magSize; byteIdx++){
-
-            MiBTimer.start();
-            //write byte
-            file << '0';
-            MiBTimer.stop();
-            byByteCounter += MiBTimer.getDuration();
- 
-        }
-        
+    for(uint_fast64_t gIdx = 0; gIdx < gibs; gIdx++){
+        for(uint_fast64_t mIdx = 0; mIdx < mibs; mIdx++){
+            for(uint_fast64_t kIdx = 0; kIdx < kibs; kIdx++){
+                for(uint_fast64_t bIdx = 0; bIdx < 1024; bIdx++){
+                    file.put(bIdx);
+                }
+            }
+        }        
     }
     
-    timer.stop();
-    file.close();
+    // Stop measure
+    timer.stop();    
     
     // Get time of this action
-    this->totalTime += byByteCounter;//timer.getDuration();
+    this->totalTime += timer;
     
-    cout << "Write sequential: " << byByteCounter << " seconds" << endl;        
-    printf("Throughput: %f MiB/s\n", sizeRWInMiB / byByteCounter);
+    // Print out date
+    cout << "Write sequential: " << timer << " seconds" << endl;       
+    cout << "Throughput: " << sizeRWInMiB / timer << " MiB/s" << endl;
+    
+    // close file 
+    file.close();
 }
 
 void Benchmark::readSequential(){
     
-    double byByteCounter = 0;
-    char b;
-    Timer MiBTimer;
+    // file handler
     ifstream file;
     
-    // open the file
-    file.open(this->testFilePath, ios::binary);    
+    // open the file    
+    file.open( this->testFilePath, ios::binary);
     
+    // Start measure
     timer.start();
     
-    // Read file less the size
-    for(ulong magIdx = 0; magIdx < this->sizeRepeats; magIdx++){
-        for(ulong byteIdx = 0, MiBCounter = 0; byteIdx < this->magSize; byteIdx++, MiBCounter++){
-            MiBTimer.start();
-            // Read byte
-            file >> b;
-            MiBTimer.stop();
-            byByteCounter += MiBTimer;
+    // Read to file using bytes as index
+    for(uint_fast64_t gIdx = 0; gIdx < gibs; gIdx++){
+        for(uint_fast64_t mIdx = 0; mIdx < mibs; mIdx++){
+            for(uint_fast64_t kIdx = 0; kIdx < kibs; kIdx++){
+                for(uint_fast64_t bIdx = 0; bIdx < 1024; bIdx++){
+                    file.get();
+                }
+            }
         }        
     }
     
-    timer.stop();
+    // Stop measure
+    timer.stop();    
     
     // Get time of this action
-    this->totalTime += timer.getDuration();
+    this->totalTime += timer;
     
+    // Print out date
+    cout << "Read sequential: " << timer << " seconds" << endl;       
+    cout << "Throughput: " << sizeRWInMiB / timer << " MiB/s" << endl;
+    
+    // close file 
     file.close();
-    
-    cout << "Read sequential: " << timer << " seconds" << endl;
-    //cout << "Medium time: " << byByteCounter / Benchmark::MiB << " MiB/s" << endl;
-    
-    printf("Throughput: %f MiB/s\n", sizeRWInMiB / timer);
 }
 
 
 void Benchmark::writeRandom(){
+    
+    // Start 
     srand( time(NULL));
-    ulong seek_tmp = 0;
-    double byByteCounter = 0;
-    char b = 0;
-    Timer MiBTimer;
+    
+    // File handler
     ofstream file;
+    ulong seek_tmp;
     
     // open the file    
     file.open(this->testFilePath, ios::binary);
-        
+    
+    // Start measure
     timer.start();
     
-    // Write to file using bytes as index
-    for(ulong magIdx = 0; magIdx < this->sizeRepeats; magIdx++){
-        
-        for(ulong byteIdx = 0; byteIdx < this->magSize; byteIdx++){
-
-            MiBTimer.start();
-            //write byte
-            seek_tmp = (rand() % this->sizeRepeats) % this->magSize;
-            file.seekp(seek_tmp);
-            file << b;
-            
-            MiBTimer.stop();
-            byByteCounter += MiBTimer;
- 
-        }
-        
+    // Get the byte total size
+    uint_fast64_t totalSize = this->sizeRepeats * this->magSize;
+    
+    // Write to file using bytes as index with file seeks
+    // for each KiB
+    for(uint_fast64_t gIdx = 0; gIdx < gibs; gIdx++){
+        for(uint_fast64_t mIdx = 0; mIdx < mibs; mIdx++){
+            for(uint_fast64_t kIdx = 0; kIdx < kibs; kIdx++){
+                
+                // random seek position for each KiB
+                seek_tmp = (rand() % totalSize);
+                file.seekp(seek_tmp);
+                
+                for(uint_fast64_t bIdx = 0; bIdx < 1024; bIdx++){
+                    file.put(bIdx);
+                }
+                
+            }
+        }        
     }
     
-    timer.stop();
-    file.close();
+    // Stop measure
+    timer.stop();   
     
     // Get time of this action
-    this->totalTime += timer.getDuration();
+    this->totalTime += timer;
     
+    // Print results
     cout << "Write random: " << timer << " seconds" << endl;        
-    printf("Throughput: %f MiB/s\n", sizeRWInMiB / timer);    
+    cout << "Throughput: " << sizeRWInMiB / timer << " MiB/s" << endl;    
+    
+    // close file
+    file.close();
 }
 
 void Benchmark::readRandom(){
+        
+    // Start 
+    srand( time(NULL));
     
+    // File handler
+    ifstream file;
+    ulong seek_tmp;
+    
+    // open the file    
+    file.open(this->testFilePath, ios::binary);
+    
+    // Get the byte total size
+    uint_fast64_t totalSize = this->sizeRepeats * this->magSize;
+    
+    // Start measure
+    timer.start();
+    
+    // Read from file using bytes as index with file seeks
+    for(uint_fast64_t gIdx = 0; gIdx < gibs; gIdx++){
+        for(uint_fast64_t mIdx = 0; mIdx < mibs; mIdx++){
+            for(uint_fast64_t kIdx = 0; kIdx < kibs; kIdx++){
+                
+                // random seek position for each KiB
+                seek_tmp = (rand() % totalSize);
+                file.seekg(seek_tmp);
+                
+                for(uint_fast64_t bIdx = 0; bIdx < 1024; bIdx++){
+                    // Read a byte
+                    file.get();
+                }                
+            }
+        }        
+    }
+    
+    // Stop measure
+    timer.stop();   
+    
+    // Get time of this action
+    this->totalTime += timer;
+    
+    // Print results
+    cout << "Read random: " << timer << " seconds" << endl;        
+    cout << "Throughput: " << sizeRWInMiB / timer << " MiB/s" << endl;    
+    
+    // close file
+    file.close();
 }

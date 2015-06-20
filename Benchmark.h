@@ -49,6 +49,11 @@ private:
     ulong readRandomThroughput;
     ulong writeRandomThroughtput;
     ulong sizeRWInMiB;
+    
+    uint_fast64_t gibs;
+    uint_fast64_t mibs;
+    uint_fast64_t kibs;
+    
     double totalTime;
     
     Timer timer;
@@ -60,8 +65,6 @@ private:
     void setTestFilePath();
     void setMagTestSize();
     
-    // Prepare file to operations
-    void prepareFile();
     
     //Read and write
     void writeSequential();
