@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=FileSystemThroughputBenchmark
+PROJECTNAME=FileSystemBenchmarkCPP
 
 # Active Configuration
 DEFAULTCONF=Debug

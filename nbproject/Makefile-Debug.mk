@@ -21,8 +21,8 @@ FC=gfortran
 AS=as
 
 # Macros
-CND_PLATFORM=GNU-Linux-x86
-CND_DLIB_EXT=so
+CND_PLATFORM=GNU-MacOSX
+CND_DLIB_EXT=dylib
 CND_CONF=Debug
 CND_DISTDIR=dist
 CND_BUILDDIR=build
@@ -57,11 +57,11 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/filesystemthroughputbenchmark
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/filesystembenchmarkcpp
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/filesystemthroughputbenchmark: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/filesystembenchmarkcpp: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/filesystemthroughputbenchmark ${OBJECTFILES} ${LDLIBSOPTIONS}
+	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/filesystembenchmarkcpp ${OBJECTFILES} ${LDLIBSOPTIONS}
 
 ${OBJECTDIR}/Benchmark.o: Benchmark.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -79,7 +79,7 @@ ${OBJECTDIR}/main.o: main.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/filesystemthroughputbenchmark
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/filesystembenchmarkcpp
 
 # Subprojects
 .clean-subprojects:

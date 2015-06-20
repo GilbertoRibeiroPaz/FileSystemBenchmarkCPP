@@ -89,8 +89,13 @@ void Benchmark::run(){
     if(this->envIsAlreadySet){
         sizeRWInMiB = (this->sizeRepeats * this->magSize) / Benchmark::MiB;
         this->prepareFile();
-        this->writeSequential();
+        /*
+        
+        this->writeSequential();   
         this->readSequential();
+        this->writeRandom();
+        this->readRandom();
+         */
         printf("Total Time: %.10f\n", this->totalTime);
     }
 }
@@ -118,7 +123,7 @@ void Benchmark::reset(){
  * Set the the file path to write the test.
  */
 void Benchmark::setTestFilePath(){
-    this->testFilePath = (char*)(this->mountPoint + this->TestFileName).c_str();
+    this->testFilePath = this->mountPoint + "/testfile";
 }
 
 /**
@@ -143,11 +148,33 @@ void Benchmark::setMagTestSize(){
  * Write the file total size before start the operations.
  */
 void Benchmark::prepareFile(){
-    FILE* filed = fopen64(this->testFilePath, "wb");
     
-    fwrite(filed, 1, this->magSize * this->sizeRepeats, filed);
+    ofstream fileWrite(this->testFilePath, ios::binary);   
+    timer.start();
     
-    fclose(filed);
+    // Write to file using bytes as index
+    /*
+    for(ulong magIdx = 0; magIdx < this->sizeRepeats; magIdx++){        
+        for(ulong byteIdx = 0; byteIdx < this->magSize; byteIdx++){
+            //write byte
+            //timer.start();
+            fileWrite.put('0');
+            //timer.stop();
+        }
+    }
+    */
+    
+    // Test write with buffered stream. Pass OK
+    // Real results
+    ulong bufferSize = this->sizeRepeats * this->magSize;
+    const char* buffer = new char[bufferSize];
+    fileWrite.write(buffer, bufferSize);
+    
+    timer.stop();
+    cout << "Time to create a " << this->sizeRWInMiB << "MiB file: " << timer.getDuration() << " seconds" << endl;
+    cout << "Throughput: " << this->sizeRWInMiB / timer << "MiB/s" << endl;
+    fileWrite.close();
+    
 }
 
 /**
@@ -157,12 +184,12 @@ void Benchmark::writeSequential(){
     
         
     double byByteCounter = 0;
-    char* bfr = new char[1];
+    
     Timer MiBTimer;
     ofstream file;
     
     // open the file    
-    file.open(this->testFilePath, ios::binary);
+    file.open( this->testFilePath, ios::binary);
     
     timer.start();
     
@@ -173,9 +200,9 @@ void Benchmark::writeSequential(){
 
             MiBTimer.start();
             //write byte
-            file.write(bfr, 1);
+            file << '0';
             MiBTimer.stop();
-            byByteCounter += MiBTimer;
+            byByteCounter += MiBTimer.getDuration();
  
         }
         
@@ -185,18 +212,18 @@ void Benchmark::writeSequential(){
     file.close();
     
     // Get time of this action
-    this->totalTime += timer.getDuration();
+    this->totalTime += byByteCounter;//timer.getDuration();
     
-    cout << "Write duration: " << timer << " seconds" << endl;        
-    printf("Throughput: %f MiB/s\n", sizeRWInMiB / timer);
+    cout << "Write sequential: " << byByteCounter << " seconds" << endl;        
+    printf("Throughput: %f MiB/s\n", sizeRWInMiB / byByteCounter);
 }
 
 void Benchmark::readSequential(){
     
     double byByteCounter = 0;
-    char* bfr = new char[1];
+    char b;
     Timer MiBTimer;
-    fstream file;
+    ifstream file;
     
     // open the file
     file.open(this->testFilePath, ios::binary);    
@@ -208,7 +235,7 @@ void Benchmark::readSequential(){
         for(ulong byteIdx = 0, MiBCounter = 0; byteIdx < this->magSize; byteIdx++, MiBCounter++){
             MiBTimer.start();
             // Read byte
-            file.read(bfr, 1);
+            file >> b;
             MiBTimer.stop();
             byByteCounter += MiBTimer;
         }        
@@ -221,7 +248,7 @@ void Benchmark::readSequential(){
     
     file.close();
     
-    cout << "Read duration: " << timer << " seconds" << endl;
+    cout << "Read sequential: " << timer << " seconds" << endl;
     //cout << "Medium time: " << byByteCounter / Benchmark::MiB << " MiB/s" << endl;
     
     printf("Throughput: %f MiB/s\n", sizeRWInMiB / timer);
@@ -230,9 +257,9 @@ void Benchmark::readSequential(){
 
 void Benchmark::writeRandom(){
     srand( time(NULL));
-        
+    ulong seek_tmp = 0;
     double byByteCounter = 0;
-    char* bfr = new char[1];
+    char b = 0;
     Timer MiBTimer;
     ofstream file;
     
@@ -248,7 +275,9 @@ void Benchmark::writeRandom(){
 
             MiBTimer.start();
             //write byte
-            file.write(bfr, 1);
+            seek_tmp = (rand() % this->sizeRepeats) % this->magSize;
+            file.seekp(seek_tmp);
+            file << b;
             
             MiBTimer.stop();
             byByteCounter += MiBTimer;
@@ -263,7 +292,7 @@ void Benchmark::writeRandom(){
     // Get time of this action
     this->totalTime += timer.getDuration();
     
-    cout << "Write duration: " << timer << " seconds" << endl;        
+    cout << "Write random: " << timer << " seconds" << endl;        
     printf("Throughput: %f MiB/s\n", sizeRWInMiB / timer);    
 }
 

@@ -8,6 +8,7 @@
 #ifndef BENCHMARK_H
 #define	BENCHMARK_H
 
+#include "proj_types.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -53,8 +54,7 @@ private:
     Timer timer;
     
     std::string results;
-    const std::string TestFileName = "/testfile";
-    char* testFilePath;
+    std::string testFilePath;
     
     void reset();
     void setTestFilePath();
