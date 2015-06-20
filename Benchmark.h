@@ -37,17 +37,12 @@ public:
     
     std::string getResults();
 
-    
 private:
     Benchmark::BlockMagType blockType;
     std::string mountPoint;
     ulong magSize;
     ulong sizeRepeats;
     ulong repeats;
-    ulong readSequentialThroughput;
-    ulong writeSequentialThroughput;
-    ulong readRandomThroughput;
-    ulong writeRandomThroughtput;
     ulong sizeRWInMiB;
     
     uint_fast64_t gibs;
@@ -74,7 +69,8 @@ private:
     
     bool envIsAlreadySet;
     
-    
+    // random access callback to seek to 0 if file pointer go further than the file total size.
+    // static inline void lastIndexEventForFileWriter(ios::event ev, ios_base& stream, int index);
 };
 
 #endif	/* BENCHMARK_H */

@@ -1,10 +1,8 @@
 #include "Timer.h"
 
-static double acumulator = 0;
-
 Timer::Timer(){
-    lastDuration = 0;
-    acumulator = 0;
+    this->lastDuration = 0;
+    this->acumulator = 0;
 }
 
 void Timer::start(){
@@ -26,7 +24,7 @@ void Timer::stop(){
     duration = seconds + useconds/1000000.0;
     
     this->lastDuration = duration;
-    acumulator += this->lastDuration;
+    this->acumulator += this->lastDuration;
 }
 
 double Timer::getDuration(){
@@ -34,9 +32,9 @@ double Timer::getDuration(){
 }
 
 void Timer::clear(){
-    acumulator = 0;
+    this->acumulator = 0;
 }
 
-double Timer::getAcumulatedTime(){
-    return acumulator;
+double Timer::totalTime(){
+    return this->acumulator;
 }

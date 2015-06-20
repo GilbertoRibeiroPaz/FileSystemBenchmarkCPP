@@ -10,6 +10,8 @@
 
 using namespace std;
 
+
+static Benchmark* instance = NULL;
 /**
  * Default constructor
  */
@@ -20,6 +22,8 @@ Benchmark::Benchmark(){
     this->sizeRepeats = 0;
     
     envIsAlreadySet = false;
+    
+    instance = this;
 }
 
 /**
@@ -36,6 +40,8 @@ Benchmark::Benchmark(std::string mountPoint, ulong repeats, ulong size, BlockMag
     this->blockType = type;
     
     envIsAlreadySet = true;
+    
+    instance = this;
 }
 
 /**
@@ -48,6 +54,8 @@ Benchmark::Benchmark(const Benchmark& orig) {
     this->repeats = orig.repeats;
     this->sizeRepeats = orig.sizeRepeats;    
     this->blockType = orig.blockType;
+    
+    instance = this;
 }
 
 /**
@@ -82,19 +90,23 @@ void Benchmark::setEnv(std::string mountPoint, ulong repeats, ulong size, BlockM
  */
 void Benchmark::run(){
     
-    this->reset();
+    
     this->setMagTestSize();
     this->setTestFilePath();
     
     if(this->envIsAlreadySet){
         sizeRWInMiB = (this->sizeRepeats * this->magSize) / Benchmark::MiB;
-               
-        this->writeSequential();   
-        this->readSequential();
-        this->writeRandom();
-        this->readRandom();
         
-        printf("Total Time: %.10f\n", this->totalTime);
+        for(ulong repeatIdx = 0; repeatIdx < this->repeats; repeatIdx++){
+            cout << "Repeat: " << repeatIdx+1 << "/" << this->repeats << endl;
+            this->reset();
+            this->writeSequential();            
+            this->readSequential();
+            this->writeRandom();
+            this->readRandom();
+            
+            printf("Total Time: %.10f\n", this->totalTime);            
+        }
     }
 }
 
@@ -111,10 +123,7 @@ std::string Benchmark::getResults(){
  */
 void Benchmark::reset(){
     results = "";
-    readRandomThroughput = readSequentialThroughput = 0;
-    writeRandomThroughtput = writeSequentialThroughput = 0;
-    totalTime = 0;
-    
+    totalTime = 0;    
 }
 
 /**
@@ -162,74 +171,84 @@ void Benchmark::writeSequential(){
         
     // file handler
     ofstream file;
-    
+        
     // open the file    
     file.open( this->testFilePath, ios::binary);
-    
-    // Start measure
-    timer.start();
-    
-    // Test write with timer by MiB
-    
+        
     // Write to file using bytes as index
     for(uint_fast64_t gIdx = 0; gIdx < gibs; gIdx++){
         for(uint_fast64_t mIdx = 0; mIdx < mibs; mIdx++){
+            
+            // Start timer to each MiB measure
+            timer.start();
             for(uint_fast64_t kIdx = 0; kIdx < kibs; kIdx++){
                 for(uint_fast64_t bIdx = 0; bIdx < 1024; bIdx++){
-                    file.put(bIdx);
+                    file.put(0);
                 }
             }
+            // stop
+            timer.stop();
         }        
-    }
-    
-    // Stop measure
-    timer.stop();    
+    }    
     
     // Get time of this action
-    this->totalTime += timer;
+    this->totalTime += timer.totalTime();
     
-    // Print out date
-    cout << "Write sequential: " << timer << " seconds" << endl;       
-    cout << "Throughput: " << sizeRWInMiB / timer << " MiB/s" << endl;
+    // Print out data capture
+    cout << endl;
+    cout << "Write sequential: " << endl;
+    cout << "Exec time: " << timer.totalTime() << " seconds" << endl;       
+    cout << "Throughput: " << sizeRWInMiB / timer.totalTime() << " MiB/s" << endl;
+    cout << endl;
     
     // close file 
     file.close();
+    
+    // clear cronometer
+    timer.clear();
 }
 
 void Benchmark::readSequential(){
     
     // file handler
     ifstream file;
-    
+        
     // open the file    
     file.open( this->testFilePath, ios::binary);
-    
-    // Start measure
-    timer.start();
     
     // Read to file using bytes as index
     for(uint_fast64_t gIdx = 0; gIdx < gibs; gIdx++){
         for(uint_fast64_t mIdx = 0; mIdx < mibs; mIdx++){
+            
+            // Start measure for each MiB
+            timer.start();
             for(uint_fast64_t kIdx = 0; kIdx < kibs; kIdx++){
                 for(uint_fast64_t bIdx = 0; bIdx < 1024; bIdx++){
                     file.get();
                 }
             }
+            
+            // Stop measure
+            timer.stop();    
         }        
     }
     
-    // Stop measure
-    timer.stop();    
+
     
     // Get time of this action
-    this->totalTime += timer;
+    this->totalTime += timer.totalTime();
     
     // Print out date
-    cout << "Read sequential: " << timer << " seconds" << endl;       
-    cout << "Throughput: " << sizeRWInMiB / timer << " MiB/s" << endl;
+    cout << "Read sequential: " << endl;
+    cout << "Exec time: " << timer.totalTime() << " seconds" << endl;       
+    cout << "Throughput: " << sizeRWInMiB / timer.totalTime() << " MiB/s" << endl;
+    cout << endl;
     
     // close file 
     file.close();
+    
+    // clear cronometer
+    timer.clear();
 }
 
 
@@ -240,47 +259,71 @@ void Benchmark::writeRandom(){
     
     // File handler
     ofstream file;
-    ulong seek_tmp;
+    
+    uint_fast64_t seek_tmp = 1;
     
     // open the file    
     file.open(this->testFilePath, ios::binary);
-    
-    // Start measure
-    timer.start();
     
     // Get the byte total size
     uint_fast64_t totalSize = this->sizeRepeats * this->magSize;
     
     // Write to file using bytes as index with file seeks
     // for each KiB
-    for(uint_fast64_t gIdx = 0; gIdx < gibs; gIdx++){
+    
+    // TODO: Get the pointer to the of file position. NOTE: it's faster than using <file handler>.tellg(), because of a needless of jump and copy/return new allocated memory
+    //file.register_callback(lastIndexEventForFileWriter, totalSize);
+    
+    
+    for(uint_fast64_t gIdx = 0, maxFpos = 0; gIdx < gibs; gIdx++){
         for(uint_fast64_t mIdx = 0; mIdx < mibs; mIdx++){
+            
+             // Start measure for each MiB
+            timer.start();
+            
             for(uint_fast64_t kIdx = 0; kIdx < kibs; kIdx++){
                 
                 // random seek position for each KiB
                 seek_tmp = (rand() % totalSize);
-                file.seekp(seek_tmp);
+                file.seekp(seek_tmp, ios::beg);
+                maxFpos = seek_tmp;
                 
-                for(uint_fast64_t bIdx = 0; bIdx < 1024; bIdx++){
-                    file.put(bIdx);
+                for(uint_fast64_t bIdx = 0; bIdx < 1024; bIdx++, maxFpos++){    
+                    // Position is write, but it is writing 1024 bytes
+                    // if position is 800 byte index, then it will write
+                    // 800 + 1024 bytes.
+                    
+                    // Go back to the first byte if seek position is
+                    // wider than the file total size.
+                    if(maxFpos >= totalSize){
+                        maxFpos = file.tellp();
+                        file.seekp(0, ios::beg);
+                    }
+                    file.put(0);                    
                 }
                 
             }
+            
+            // Stop measure
+            timer.stop();       
         }        
     }
     
-    // Stop measure
-    timer.stop();   
-    
+
     // Get time of this action
-    this->totalTime += timer;
+    this->totalTime += timer.totalTime();
     
     // Print results
-    cout << "Write random: " << timer << " seconds" << endl;        
-    cout << "Throughput: " << sizeRWInMiB / timer << " MiB/s" << endl;    
+    cout << "Write random: " << endl;
+    cout << "Exec time: " << timer.totalTime() << " seconds" << endl;        
+    cout << "Throughput: " << sizeRWInMiB / timer.totalTime() << " MiB/s" << endl;    
+    cout << endl;
     
     // close file
     file.close();
+    
+    // clear cronometer
+    timer.clear();
 }
 
 void Benchmark::readRandom(){
@@ -297,37 +340,53 @@ void Benchmark::readRandom(){
     
     // Get the byte total size
     uint_fast64_t totalSize = this->sizeRepeats * this->magSize;
-    
-    // Start measure
-    timer.start();
-    
+        
     // Read from file using bytes as index with file seeks
-    for(uint_fast64_t gIdx = 0; gIdx < gibs; gIdx++){
+    for(uint_fast64_t gIdx = 0, maxFpos; gIdx < gibs; gIdx++){
         for(uint_fast64_t mIdx = 0; mIdx < mibs; mIdx++){
+            
+            // Start measure for each MiB
+            timer.start();
+            
             for(uint_fast64_t kIdx = 0; kIdx < kibs; kIdx++){
                 
                 // random seek position for each KiB
                 seek_tmp = (rand() % totalSize);
-                file.seekg(seek_tmp);
+                file.seekg(seek_tmp, ios::beg);
+                maxFpos = seek_tmp;
                 
-                for(uint_fast64_t bIdx = 0; bIdx < 1024; bIdx++){
-                    // Read a byte
-                    file.get();
+                for(uint_fast64_t bIdx = 0; bIdx < 1024; bIdx++, maxFpos++){    
+                    // Position is read, but it is read 1024 bytes
+                    // if position is 800 byte index, then it will write
+                    // 800 + 1024 bytes.
+                    
+                    // Go back to the first byte if seek position is
+                    // wider than the file total size.
+                    if(maxFpos >= totalSize){
+                        maxFpos = file.tellg();
+                        file.seekg(0, ios::beg);
+                    }
+                    file.get();                    
                 }                
             }
+            
+            // Stop measure
+            timer.stop();   
         }        
     }
-    
-    // Stop measure
-    timer.stop();   
-    
+        
     // Get time of this action
-    this->totalTime += timer;
+    this->totalTime += timer.totalTime();
     
     // Print results
-    cout << "Read random: " << timer << " seconds" << endl;        
-    cout << "Throughput: " << sizeRWInMiB / timer << " MiB/s" << endl;    
+    cout << "Read random: " << endl; 
+    cout << "Exec time: " << timer.totalTime() << " seconds" << endl;        
+    cout << "Throughput: " << sizeRWInMiB / timer.totalTime() << " MiB/s" << endl;    
+    cout << endl;
     
     // close file
     file.close();
+    
+    // clear cronometer
+    timer.clear();
 }

@@ -21,7 +21,7 @@ private:
 
     timeval startTime;
     double lastDuration;
-        
+    double acumulator;    
 public:
     Timer();
     
@@ -29,7 +29,7 @@ public:
     void stop();
     double getDuration();    
     void clear();    
-    double getAcumulatedTime();
+    double totalTime();
         
     friend std::ostream& operator<<(std::ostream& os, Timer& t){
         os << t.lastDuration;
