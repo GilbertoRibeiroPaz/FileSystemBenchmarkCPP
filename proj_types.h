@@ -14,6 +14,10 @@
 extern "C" {
 #endif
     
+    
+    
+#ifndef __linux__
+    
 #ifndef _UINT64_T
 #define _UINT64_T
 typedef unsigned long long uint64_t;
@@ -23,6 +27,7 @@ typedef uint64_t        uint_fast64_t;
 
 typedef unsigned long long ulong;
 
+#endif /*__linux__*/
 
 #ifdef	__cplusplus
 }

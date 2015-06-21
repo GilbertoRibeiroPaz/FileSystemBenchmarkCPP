@@ -28,7 +28,6 @@ int main(int argc, char** argv) {
     Benchmark bnk;
     bnk.setEnv(mp, repeats, timesMag, magType);
     bnk.run();
-    bnk.getResults();
     
     return 0;
 }

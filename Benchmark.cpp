@@ -97,7 +97,7 @@ void Benchmark::run(){
             this->readSequential();
             this->writeRandom();
             this->readRandom();
-            
+            this->getResults();
             printf("Total Time: %.10f\n", this->totalTime);            
         }
     }
@@ -108,11 +108,16 @@ void Benchmark::run(){
  * @return result
  */
 std::string Benchmark::getResults(){
-    char* format = "%20s|%5.10f|%5.10f|%5.10f|%5.10f\n";
+    char title[] = "%18s|%20s|%20s|%20s|%20s\n";
+    char format[] = "%18s|%20.10f|%20.10f|%20.10f|%20.10f\n";
+    char sep[] = "---------------------------------------------------------------------------------------------------------\n";
+    printf(title, "Title", "Throughput MiB/s", "Average in seconds", "Default Deviation", "Execution time");
+    printf("%s", sep);
     printf(format, "Read Sequential", throughputReadSequential, averageReadSequential, defaulDevReadSequential, execTimeReadSequential);
-    printf(format,"Read Random", throughputReadRandom, averageReadRandom, defaulDevReadRandom, execTimeReadRandom);
-    printf(format,"Write Sequential", throughputWriteSequential, averageWriteSequential, defaulDevWriteSequential, execTimeWriteSequential);
-    printf(format,"Write Random", throughputWriteRandom, averageWriteRandom, defaulDevWriteRandom, execTimeWriteRandom);
+    printf(format, "Read Random", throughputReadRandom, averageReadRandom, defaulDevReadRandom, execTimeReadRandom);
+    printf(format, "Write Sequential", throughputWriteSequential, averageWriteSequential, defaulDevWriteSequential, execTimeWriteSequential);
+    printf(format, "Write Random", throughputWriteRandom, averageWriteRandom, defaulDevWriteRandom, execTimeWriteRandom);
+    printf("%s", sep);
     return this->results;
 }
 
@@ -172,19 +177,19 @@ void Benchmark::writeSequential(){
     ofstream file;
         
     // open the file    
-    file.open( this->testFilePath, ios::binary);
+    file.open( this->testFilePath.c_str(), ios::binary);
     
     // Set timer set amount MiBs
     timer.setSetSize(sizeRWInMiB);
     
     // Write to file using bytes as index
-    for(uint_fast64_t gIdx = 0; gIdx < gibs; gIdx++){
-        for(uint_fast64_t mIdx = 0; mIdx < mibs; mIdx++){
+    for(ulong gIdx = 0; gIdx < gibs; gIdx++){
+        for(ulong mIdx = 0; mIdx < mibs; mIdx++){
             
             // Start timer to each MiB measure
             timer.start();
-            for(uint_fast64_t kIdx = 0; kIdx < kibs; kIdx++){
-                for(uint_fast64_t bIdx = 0; bIdx < 1024; bIdx++){
+            for(ulong kIdx = 0; kIdx < kibs; kIdx++){
+                for(ulong bIdx = 0; bIdx < 1024; bIdx++){
                     file.put(0);
                 }
             }
@@ -215,19 +220,19 @@ void Benchmark::readSequential(){
     ifstream file;
         
     // open the file    
-    file.open( this->testFilePath, ios::binary);
+    file.open( this->testFilePath.c_str(), ios::binary);
     
     // Set timer set amount MiBs
     timer.setSetSize(sizeRWInMiB);
     
     // Read to file using bytes as index
-    for(uint_fast64_t gIdx = 0; gIdx < gibs; gIdx++){
-        for(uint_fast64_t mIdx = 0; mIdx < mibs; mIdx++){
+    for(ulong gIdx = 0; gIdx < gibs; gIdx++){
+        for(ulong mIdx = 0; mIdx < mibs; mIdx++){
             
             // Start measure for each MiB
             timer.start();
-            for(uint_fast64_t kIdx = 0; kIdx < kibs; kIdx++){
-                for(uint_fast64_t bIdx = 0; bIdx < 1024; bIdx++){
+            for(ulong kIdx = 0; kIdx < kibs; kIdx++){
+                for(ulong bIdx = 0; bIdx < 1024; bIdx++){
                     file.get();
                 }
             }
@@ -262,13 +267,13 @@ void Benchmark::writeRandom(){
     // File handler
     ofstream file;
     
-    uint_fast64_t seek_tmp = 1;
+    ulong seek_tmp = 1;
     
     // open the file    
-    file.open(this->testFilePath, ios::binary);
+    file.open(this->testFilePath.c_str(), ios::binary);
     
     // Get the byte total size
-    uint_fast64_t totalSize = this->sizeRepeats * this->magSize;
+    ulong totalSize = this->sizeRepeats * this->magSize;
     
     // Write to file using bytes as index with file seeks
     // for each KiB
@@ -279,20 +284,20 @@ void Benchmark::writeRandom(){
     // Set timer set amount MiBs
     timer.setSetSize(sizeRWInMiB);
     
-    for(uint_fast64_t gIdx = 0, maxFpos = 0; gIdx < gibs; gIdx++){
-        for(uint_fast64_t mIdx = 0; mIdx < mibs; mIdx++){
+    for(ulong gIdx = 0, maxFpos = 0; gIdx < gibs; gIdx++){
+        for(ulong mIdx = 0; mIdx < mibs; mIdx++){
             
              // Start measure for each MiB
             timer.start();
             
-            for(uint_fast64_t kIdx = 0; kIdx < kibs; kIdx++){
+            for(ulong kIdx = 0; kIdx < kibs; kIdx++){
                 
                 // random seek position for each KiB
                 seek_tmp = (rand() % totalSize);
                 file.seekp(seek_tmp, ios::beg);
                 maxFpos = seek_tmp;
                 
-                for(uint_fast64_t bIdx = 0; bIdx < 1024; bIdx++, maxFpos++){    
+                for(ulong bIdx = 0; bIdx < 1024; bIdx++, maxFpos++){    
                     // Position is write, but it is writing 1024 bytes
                     // if position is 800 byte index, then it will write
                     // 800 + 1024 bytes.
@@ -337,32 +342,32 @@ void Benchmark::readRandom(){
     
     // File handler
     ifstream file;
-    ulong seek_tmp;
+    ulong seek_tmp = 1;
     
     // open the file    
-    file.open(this->testFilePath, ios::binary);
+    file.open(this->testFilePath.c_str(), ios::binary);
     
     // Get the byte total size
-    uint_fast64_t totalSize = this->sizeRepeats * this->magSize;
+    ulong totalSize = this->sizeRepeats * this->magSize;
         
     // Set timer set amount MiBs
     timer.setSetSize(sizeRWInMiB);
     
     // Read from file using bytes as index with file seeks
-    for(uint_fast64_t gIdx = 0, maxFpos; gIdx < gibs; gIdx++){
-        for(uint_fast64_t mIdx = 0; mIdx < mibs; mIdx++){
+    for(ulong gIdx = 0, maxFpos; gIdx < gibs; gIdx++){
+        for(ulong mIdx = 0; mIdx < mibs; mIdx++){
             
             // Start measure for each MiB
             timer.start();
             
-            for(uint_fast64_t kIdx = 0; kIdx < kibs; kIdx++){
+            for(ulong kIdx = 0; kIdx < kibs; kIdx++){
                 
                 // random seek position for each KiB
                 seek_tmp = (rand() % totalSize);
                 file.seekg(seek_tmp, ios::beg);
                 maxFpos = seek_tmp;
                 
-                for(uint_fast64_t bIdx = 0; bIdx < 1024; bIdx++, maxFpos++){    
+                for(ulong bIdx = 0; bIdx < 1024; bIdx++, maxFpos++){    
                     // Position is read, but it is read 1024 bytes
                     // if position is 800 byte index, then it will write
                     // 800 + 1024 bytes.

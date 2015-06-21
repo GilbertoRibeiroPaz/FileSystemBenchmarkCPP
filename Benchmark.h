@@ -45,9 +45,9 @@ private:
     ulong repeats;
     ulong sizeRWInMiB;
     
-    uint_fast64_t gibs;
-    uint_fast64_t mibs;
-    uint_fast64_t kibs;
+    ulong gibs;
+    ulong mibs;
+    ulong kibs;
     
     double totalTime;
     
