@@ -11,8 +11,10 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <sys/time.h>
 #include "proj_types.h"
+#include <vector>
 
 using namespace std;
 
@@ -21,15 +23,22 @@ private:
 
     timeval startTime;
     double lastDuration;
-    double acumulator;    
+    double acumulator;
+    vector<double> indResult;
+    ulong size;
+    
 public:
     Timer();
     
     void start();
     void stop();
     double getDuration();    
-    void clear();    
+    void clear();
     double totalTime();
+    void setSetSize(ulong size);
+    double averageTime();
+    double variance();
+    double defaultDeviation();
         
     friend std::ostream& operator<<(std::ostream& os, Timer& t){
         os << t.lastDuration;

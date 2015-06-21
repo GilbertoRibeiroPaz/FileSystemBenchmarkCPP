@@ -15,7 +15,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include "Timer.h"
-
+#include "util_format.h"
 
 class Benchmark {
 public:
@@ -52,6 +52,33 @@ private:
     double totalTime;
     
     Timer timer;
+    
+    // Results
+    // Write sequential
+    double throughputWriteSequential;
+    double execTimeWriteSequential;
+    double averageWriteSequential;
+    double defaulDevWriteSequential;
+    
+    // WriteRandom;
+    double throughputWriteRandom;
+    double execTimeWriteRandom;
+    double averageWriteRandom;
+    double defaulDevWriteRandom;
+
+    // ReadSequential;
+    double throughputReadSequential;
+    double execTimeReadSequential;
+    double averageReadSequential;
+    double defaulDevReadSequential;
+
+    // ReadRandom;
+    double throughputReadRandom;
+    double execTimeReadRandom;
+    double averageReadRandom;
+    double defaulDevReadRandom;
+    
+    
     
     std::string results;
     std::string testFilePath;

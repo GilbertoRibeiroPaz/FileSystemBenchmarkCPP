@@ -11,7 +11,6 @@
 using namespace std;
 
 
-static Benchmark* instance = NULL;
 /**
  * Default constructor
  */
@@ -21,9 +20,7 @@ Benchmark::Benchmark(){
     this->repeats = 0;
     this->sizeRepeats = 0;
     
-    envIsAlreadySet = false;
-    
-    instance = this;
+    envIsAlreadySet = false;    
 }
 
 /**
@@ -40,8 +37,6 @@ Benchmark::Benchmark(std::string mountPoint, ulong repeats, ulong size, BlockMag
     this->blockType = type;
     
     envIsAlreadySet = true;
-    
-    instance = this;
 }
 
 /**
@@ -54,8 +49,6 @@ Benchmark::Benchmark(const Benchmark& orig) {
     this->repeats = orig.repeats;
     this->sizeRepeats = orig.sizeRepeats;    
     this->blockType = orig.blockType;
-    
-    instance = this;
 }
 
 /**
@@ -98,7 +91,7 @@ void Benchmark::run(){
         sizeRWInMiB = (this->sizeRepeats * this->magSize) / Benchmark::MiB;
         
         for(ulong repeatIdx = 0; repeatIdx < this->repeats; repeatIdx++){
-            cout << "Repeat: " << repeatIdx+1 << "/" << this->repeats << endl;
+            cout << "Repeat: " << repeatIdx + 1 << "/" << this->repeats << endl;
             this->reset();
             this->writeSequential();            
             this->readSequential();
@@ -115,6 +108,11 @@ void Benchmark::run(){
  * @return result
  */
 std::string Benchmark::getResults(){
+    char* format = "%20s|%5.10f|%5.10f|%5.10f|%5.10f\n";
+    printf(format, "Read Sequential", throughputReadSequential, averageReadSequential, defaulDevReadSequential, execTimeReadSequential);
+    printf(format,"Read Random", throughputReadRandom, averageReadRandom, defaulDevReadRandom, execTimeReadRandom);
+    printf(format,"Write Sequential", throughputWriteSequential, averageWriteSequential, defaulDevWriteSequential, execTimeWriteSequential);
+    printf(format,"Write Random", throughputWriteRandom, averageWriteRandom, defaulDevWriteRandom, execTimeWriteRandom);
     return this->results;
 }
 
@@ -168,13 +166,17 @@ void Benchmark::setMagTestSize(){
  * Logic to write sequential and register
  */
 void Benchmark::writeSequential(){
-        
+       
+    
     // file handler
     ofstream file;
         
     // open the file    
     file.open( this->testFilePath, ios::binary);
-        
+    
+    // Set timer set amount MiBs
+    timer.setSetSize(sizeRWInMiB);
+    
     // Write to file using bytes as index
     for(uint_fast64_t gIdx = 0; gIdx < gibs; gIdx++){
         for(uint_fast64_t mIdx = 0; mIdx < mibs; mIdx++){
@@ -192,14 +194,13 @@ void Benchmark::writeSequential(){
     }    
     
     // Get time of this action
-    this->totalTime += timer.totalTime();
-    
-    // Print out data capture
-    cout << endl;
-    cout << "Write sequential: " << endl;
-    cout << "Exec time: " << timer.totalTime() << " seconds" << endl;       
-    cout << "Throughput: " << sizeRWInMiB / timer.totalTime() << " MiB/s" << endl;
-    cout << endl;
+    this->totalTime += timer.totalTime();   
+       
+    // Capture data
+    this->averageWriteSequential = timer.averageTime();
+    this->defaulDevWriteSequential = timer.defaultDeviation();
+    this->throughputWriteSequential = sizeRWInMiB / timer.totalTime();
+    this->execTimeWriteSequential = timer.totalTime();
     
     // close file 
     file.close();
@@ -215,6 +216,9 @@ void Benchmark::readSequential(){
         
     // open the file    
     file.open( this->testFilePath, ios::binary);
+    
+    // Set timer set amount MiBs
+    timer.setSetSize(sizeRWInMiB);
     
     // Read to file using bytes as index
     for(uint_fast64_t gIdx = 0; gIdx < gibs; gIdx++){
@@ -232,17 +236,15 @@ void Benchmark::readSequential(){
             timer.stop();    
         }        
     }
-    
-
-    
+        
     // Get time of this action
     this->totalTime += timer.totalTime();
     
-    // Print out date
-    cout << "Read sequential: " << endl;
-    cout << "Exec time: " << timer.totalTime() << " seconds" << endl;       
-    cout << "Throughput: " << sizeRWInMiB / timer.totalTime() << " MiB/s" << endl;
-    cout << endl;
+    // capture data       
+    this->throughputReadSequential = sizeRWInMiB / timer.totalTime();
+    this->averageReadSequential = timer.averageTime();
+    this->defaulDevReadSequential = timer.defaultDeviation();
+    this->execTimeReadSequential = timer.totalTime();
     
     // close file 
     file.close();
@@ -274,6 +276,8 @@ void Benchmark::writeRandom(){
     // TODO: Get the pointer to the of file position. NOTE: it's faster than using <file handler>.tellg(), because of a needless of jump and copy/return new allocated memory
     //file.register_callback(lastIndexEventForFileWriter, totalSize);
     
+    // Set timer set amount MiBs
+    timer.setSetSize(sizeRWInMiB);
     
     for(uint_fast64_t gIdx = 0, maxFpos = 0; gIdx < gibs; gIdx++){
         for(uint_fast64_t mIdx = 0; mIdx < mibs; mIdx++){
@@ -312,12 +316,12 @@ void Benchmark::writeRandom(){
 
     // Get time of this action
     this->totalTime += timer.totalTime();
-    
-    // Print results
-    cout << "Write random: " << endl;
-    cout << "Exec time: " << timer.totalTime() << " seconds" << endl;        
-    cout << "Throughput: " << sizeRWInMiB / timer.totalTime() << " MiB/s" << endl;    
-    cout << endl;
+        
+    // capture results
+    this->throughputWriteRandom = sizeRWInMiB / timer.totalTime();
+    this->averageWriteRandom = timer.averageTime();
+    this->execTimeWriteRandom = timer.totalTime();
+    this->defaulDevWriteRandom = timer.defaultDeviation();
     
     // close file
     file.close();
@@ -341,6 +345,9 @@ void Benchmark::readRandom(){
     // Get the byte total size
     uint_fast64_t totalSize = this->sizeRepeats * this->magSize;
         
+    // Set timer set amount MiBs
+    timer.setSetSize(sizeRWInMiB);
+    
     // Read from file using bytes as index with file seeks
     for(uint_fast64_t gIdx = 0, maxFpos; gIdx < gibs; gIdx++){
         for(uint_fast64_t mIdx = 0; mIdx < mibs; mIdx++){
@@ -377,12 +384,12 @@ void Benchmark::readRandom(){
         
     // Get time of this action
     this->totalTime += timer.totalTime();
-    
-    // Print results
-    cout << "Read random: " << endl; 
-    cout << "Exec time: " << timer.totalTime() << " seconds" << endl;        
-    cout << "Throughput: " << sizeRWInMiB / timer.totalTime() << " MiB/s" << endl;    
-    cout << endl;
+        
+    // Capture results
+    this->throughputReadRandom = sizeRWInMiB / timer.totalTime();
+    this->averageReadRandom = timer.averageTime();
+    this->execTimeReadRandom = timer.totalTime();
+    this->defaulDevReadRandom = timer.defaultDeviation();
     
     // close file
     file.close();
