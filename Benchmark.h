@@ -15,7 +15,6 @@
 #include <time.h>
 #include <stdlib.h>
 #include "Timer.h"
-#include "util_format.h"
 
 class Benchmark {
 public:

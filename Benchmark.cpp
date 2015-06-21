@@ -91,14 +91,15 @@ void Benchmark::run(){
         sizeRWInMiB = (this->sizeRepeats * this->magSize) / Benchmark::MiB;
         
         for(ulong repeatIdx = 0; repeatIdx < this->repeats; repeatIdx++){
-            cout << "Repeat: " << repeatIdx + 1 << "/" << this->repeats << endl;
+            cout << endl << "Repeat: " << repeatIdx + 1 << "/" << this->repeats << endl;
             this->reset();
             this->writeSequential();            
             this->readSequential();
             this->writeRandom();
             this->readRandom();
             this->getResults();
-            printf("Total Time: %.10f\n", this->totalTime);            
+            printf("Total Time: %.10f seconds\n", this->totalTime);
+            cout << endl;
         }
     }
 }
@@ -108,8 +109,8 @@ void Benchmark::run(){
  * @return result
  */
 std::string Benchmark::getResults(){
-    char title[] = "%18s|%20s|%20s|%20s|%20s\n";
-    char format[] = "%18s|%20.10f|%20.10f|%20.10f|%20.10f\n";
+    char title[] = "%20s|%20s|%20s|%20s|%20s\n";
+    char format[] = "%20s|%20.10f|%20.10f|%20.10f|%20.10f\n";
     char sep[] = "---------------------------------------------------------------------------------------------------------\n";
     printf(title, "Title", "Throughput MiB/s", "Average in seconds", "Default Deviation", "Execution time");
     printf("%s", sep);
