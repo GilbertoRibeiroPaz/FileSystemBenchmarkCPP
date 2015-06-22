@@ -35,7 +35,8 @@ public:
     void run();
     
     void getResults();
-
+    void getPartialResults();
+    
 private:
     Benchmark::BlockMagType blockType;
     std::string mountPoint;
@@ -77,6 +78,7 @@ private:
     double averageReadRandom;
     double defaulDevReadRandom;
     
+
     
     std::string testFilePath;
     

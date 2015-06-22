@@ -83,7 +83,7 @@ void Benchmark::setEnv(std::string mountPoint, ulong repeats, ulong size, BlockM
  */
 void Benchmark::run(){
     
-    
+    this->reset();    
     this->setMagTestSize();
     this->setTestFilePath();
     
@@ -92,15 +92,16 @@ void Benchmark::run(){
         
         for(ulong repeatIdx = 0; repeatIdx < this->repeats; repeatIdx++){
             cout << endl << "Repeat: " << repeatIdx + 1 << "/" << this->repeats << endl;
-            this->reset();
+
             this->writeSequential();            
             this->readSequential();
             this->writeRandom();
-            this->readRandom();
-            this->getResults();
-            printf("Total Time: %.10f seconds\n", this->totalTime);
+            this->readRandom();            
+            
             cout << endl;
         }
+        this->getResults();
+        printf("Time for all testes: %.10f seconds\n", this->totalTime);
     }
 }
 
@@ -112,6 +113,18 @@ void Benchmark::getResults(){
     
     char title[] = "%20s\t%20s\t%20s\t%20s\t%20s\n";
     char format[] = "%20s\t%20.10f\t%20.10f\t%20.10f\t%20.10f\n";
+    
+    printf(title, "Title", "Throughput MiB/s", "Average in seconds", "Default Deviation", "Execution time");    
+    printf(format, "Read Sequential", throughputReadSequential/repeats, averageReadSequential/repeats, defaulDevReadSequential/repeats, execTimeReadSequential/repeats);
+    printf(format, "Read Random", throughputReadRandom/repeats, averageReadRandom/repeats, defaulDevReadRandom/repeats, execTimeReadRandom/repeats);
+    printf(format, "Write Sequential", throughputWriteSequential/repeats, averageWriteSequential/repeats, defaulDevWriteSequential/repeats, execTimeWriteSequential/repeats);
+    printf(format, "Write Random", throughputWriteRandom/repeats, averageWriteRandom/repeats, defaulDevWriteRandom/repeats, execTimeWriteRandom/repeats);
+    cout << endl;
+}
+
+void Benchmark::getPartialResults(){
+    char title[] = "%20s\t%20s\t%20s\t%20s\t%20s\n";
+    char format[] = "%20s\t%20.10f\t%20.10f\t%20.10f\t%20.10f\n";
     char sep[] = "----------------------------------------------------------------------------------------------------------------------------\n";
     printf(title, "Title", "Throughput MiB/s", "Average in seconds", "Default Deviation", "Execution time");
     printf("%s", sep);
@@ -119,7 +132,7 @@ void Benchmark::getResults(){
     printf(format, "Read Random", throughputReadRandom, averageReadRandom, defaulDevReadRandom, execTimeReadRandom);
     printf(format, "Write Sequential", throughputWriteSequential, averageWriteSequential, defaulDevWriteSequential, execTimeWriteSequential);
     printf(format, "Write Random", throughputWriteRandom, averageWriteRandom, defaulDevWriteRandom, execTimeWriteRandom);
-    printf("%s", sep);
+    printf("%s", sep);    
 }
 
 /**
