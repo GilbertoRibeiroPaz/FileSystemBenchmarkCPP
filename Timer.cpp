@@ -21,7 +21,7 @@ void Timer::stop(){
 
     seconds  = endTime.tv_sec  - startTime.tv_sec;
     useconds = endTime.tv_usec - startTime.tv_usec;
-
+    
     duration = seconds + useconds/1000000.0;
     
     this->indResult.push_back(duration);

@@ -108,10 +108,11 @@ void Benchmark::run(){
  * Get results produced by benchmark
  * @return result
  */
-std::string Benchmark::getResults(){
-    char title[] = "%20s|%20s|%20s|%20s|%20s\n";
-    char format[] = "%20s|%20.10f|%20.10f|%20.10f|%20.10f\n";
-    char sep[] = "---------------------------------------------------------------------------------------------------------\n";
+void Benchmark::getResults(){
+    
+    char title[] = "%20s\t%20s\t%20s\t%20s\t%20s\n";
+    char format[] = "%20s\t%20.10f\t%20.10f\t%20.10f\t%20.10f\n";
+    char sep[] = "----------------------------------------------------------------------------------------------------------------------------\n";
     printf(title, "Title", "Throughput MiB/s", "Average in seconds", "Default Deviation", "Execution time");
     printf("%s", sep);
     printf(format, "Read Sequential", throughputReadSequential, averageReadSequential, defaulDevReadSequential, execTimeReadSequential);
@@ -119,14 +120,12 @@ std::string Benchmark::getResults(){
     printf(format, "Write Sequential", throughputWriteSequential, averageWriteSequential, defaulDevWriteSequential, execTimeWriteSequential);
     printf(format, "Write Random", throughputWriteRandom, averageWriteRandom, defaulDevWriteRandom, execTimeWriteRandom);
     printf("%s", sep);
-    return this->results;
 }
 
 /**
  * Set throughput and total time to zero.
  */
-void Benchmark::reset(){
-    results = "";
+void Benchmark::reset(){    
     totalTime = 0;    
 }
 

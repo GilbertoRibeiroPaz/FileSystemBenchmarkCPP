@@ -9,7 +9,7 @@
 #include <iostream>
 #include <string.h>
 #include "Benchmark.h"
-#include "ParametersParser.h"s
+#include "ParametersParser.h"
 
 using namespace std;
 

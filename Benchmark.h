@@ -34,7 +34,7 @@ public:
     void setEnv(std::string mountPoint, ulong repeats, ulong size, BlockMagType type);
     void run();
     
-    std::string getResults();
+    void getResults();
 
 private:
     Benchmark::BlockMagType blockType;
@@ -78,8 +78,6 @@ private:
     double defaulDevReadRandom;
     
     
-    
-    std::string results;
     std::string testFilePath;
     
     void reset();
