@@ -89,15 +89,17 @@ void Benchmark::run(){
     
     if(this->envIsAlreadySet){
         sizeRWInMiB = (this->sizeRepeats * this->magSize) / Benchmark::MiB;
+        sizeRWInKiB = (this->sizeRepeats * this->magSize) / Benchmark::KiB;
         
-        for(ulong repeatIdx = 0; repeatIdx < this->repeats; repeatIdx++){
-            cout << endl << "Repeat: " << repeatIdx + 1 << "/" << this->repeats << endl;
+        for(ulong repeatIdx = 0; repeatIdx < this->repeats; repeatIdx++){            
 
             this->writeSequential();            
             this->readSequential();
             this->writeRandom();
             this->readRandom();            
             
+            cout << endl << "Repeat: " << repeatIdx + 1 << "/" << this->repeats << endl;
+            this->getPartialResults();
             cout << endl;
         }
         this->getResults();
@@ -114,7 +116,9 @@ void Benchmark::getResults(){
     char title[] = "%20s\t%20s\t%20s\t%20s\t%20s\n";
     char format[] = "%20s\t%20.10f\t%20.10f\t%20.10f\t%20.10f\n";
     
-    printf(title, "Title", "Throughput MiB/s", "Average in seconds", "Default Deviation", "Execution time");    
+    cout << "Final average results:" << endl;
+    cout << "--------------------------------------------------------------------------------------------------------------------------------------" << endl;
+    printf(title, "Operation Type", "Throughput MiB/s", "Average in seconds", "Default Deviation", "Execution time");    
     printf(format, "Read Sequential", throughputReadSequential/repeats, averageReadSequential/repeats, defaulDevReadSequential/repeats, execTimeReadSequential/repeats);
     printf(format, "Read Random", throughputReadRandom/repeats, averageReadRandom/repeats, defaulDevReadRandom/repeats, execTimeReadRandom/repeats);
     printf(format, "Write Sequential", throughputWriteSequential/repeats, averageWriteSequential/repeats, defaulDevWriteSequential/repeats, execTimeWriteSequential/repeats);
@@ -126,12 +130,12 @@ void Benchmark::getPartialResults(){
     char title[] = "%20s\t%20s\t%20s\t%20s\t%20s\n";
     char format[] = "%20s\t%20.10f\t%20.10f\t%20.10f\t%20.10f\n";
     char sep[] = "----------------------------------------------------------------------------------------------------------------------------\n";
-    printf(title, "Title", "Throughput MiB/s", "Average in seconds", "Default Deviation", "Execution time");
+    printf(title, "Operation Type", "Throughput MiB/s", "Average in seconds", "Default Deviation", "Execution time");
     printf("%s", sep);
-    printf(format, "Read Sequential", throughputReadSequential, averageReadSequential, defaulDevReadSequential, execTimeReadSequential);
-    printf(format, "Read Random", throughputReadRandom, averageReadRandom, defaulDevReadRandom, execTimeReadRandom);
-    printf(format, "Write Sequential", throughputWriteSequential, averageWriteSequential, defaulDevWriteSequential, execTimeWriteSequential);
-    printf(format, "Write Random", throughputWriteRandom, averageWriteRandom, defaulDevWriteRandom, execTimeWriteRandom);
+    printf(format, "Read Sequential", throughputReadSequentialPartial, averageReadSequentialPartial, defaulDevReadSequentialPartial, execTimeReadSequentialPartial);
+    printf(format, "Read Random", throughputReadRandomPartial, averageReadRandomPartial, defaulDevReadRandomPartial, execTimeReadRandomPartial);
+    printf(format, "Write Sequential", throughputWriteSequentialPartial, averageWriteSequentialPartial, defaulDevWriteSequentialPartial, execTimeWriteSequentialPartial);
+    printf(format, "Write Random", throughputWriteRandomPartial, averageWriteRandomPartial, defaulDevWriteRandomPartial, execTimeWriteRandomPartial);
     printf("%s", sep);    
 }
 
@@ -192,8 +196,12 @@ void Benchmark::writeSequential(){
     // open the file    
     file.open( this->testFilePath.c_str(), ios::binary);
     
-    // Set timer set amount MiBs
-    timer.setSetSize(sizeRWInMiB);
+    // size to use
+    ulong sizeToUse = sizeRWInMiB ? sizeRWInMiB : 1;
+    ulong amoutToDivideBy = sizeToUse == 1 ? 1024 / sizeRWInKiB : 1;
+    
+    // Set timer set amount KiBs
+    timer.setSetSize(sizeToUse);
     
     // Write to file using bytes as index
     for(ulong gIdx = 0; gIdx < gibs; gIdx++){
@@ -214,11 +222,20 @@ void Benchmark::writeSequential(){
     // Get time of this action
     this->totalTime += timer.totalTime();   
        
+    // Write sequentiaPartial;
+    // Throughput correction in case of less than 1 MiB and more than 1 KiB
+    throughputWriteSequentialPartial = sizeToUse / timer.totalTime() / amoutToDivideBy;
+    execTimeWriteSequentialPartial   = timer.totalTime();
+    averageWriteSequentialPartial    = timer.averageTime();
+    defaulDevWriteSequentialPartial  = timer.defaultDeviation();
+    
     // Capture data
-    this->averageWriteSequential = timer.averageTime();
-    this->defaulDevWriteSequential = timer.defaultDeviation();
-    this->throughputWriteSequential = sizeRWInMiB / timer.totalTime();
-    this->execTimeWriteSequential = timer.totalTime();
+    this->averageWriteSequential += averageWriteSequentialPartial;
+    this->defaulDevWriteSequential += defaulDevWriteSequentialPartial;    
+    this->throughputWriteSequential += throughputWriteSequentialPartial;
+    this->execTimeWriteSequential += execTimeWriteSequentialPartial;
+    
+
     
     // close file 
     file.close();
@@ -235,8 +252,12 @@ void Benchmark::readSequential(){
     // open the file    
     file.open( this->testFilePath.c_str(), ios::binary);
     
-    // Set timer set amount MiBs
-    timer.setSetSize(sizeRWInMiB);
+    // size to use
+    ulong sizeToUse = sizeRWInMiB ? sizeRWInMiB : 1;
+    ulong amoutToDivideBy = sizeToUse == 1 ? 1024 / sizeRWInKiB : 1;
+    
+    // Set timer set amount KiBs
+    timer.setSetSize(sizeToUse);
     
     // Read to file using bytes as index
     for(ulong gIdx = 0; gIdx < gibs; gIdx++){
@@ -258,11 +279,19 @@ void Benchmark::readSequential(){
     // Get time of this action
     this->totalTime += timer.totalTime();
     
+    // ReadSequentialPartial;
+    // Throughput correction in case of less than 1 MiB and more than 1 KiB
+    throughputReadSequentialPartial = sizeToUse / timer.totalTime() / amoutToDivideBy;
+    execTimeReadSequentialPartial   = timer.totalTime();
+    averageReadSequentialPartial    = timer.averageTime();
+    defaulDevReadSequentialPartial  = timer.defaultDeviation();
+    
     // capture data       
-    this->throughputReadSequential = sizeRWInMiB / timer.totalTime();
-    this->averageReadSequential = timer.averageTime();
-    this->defaulDevReadSequential = timer.defaultDeviation();
-    this->execTimeReadSequential = timer.totalTime();
+    this->throughputReadSequential += throughputReadSequentialPartial;
+    this->averageReadSequential += averageReadSequentialPartial;
+    this->defaulDevReadSequential += defaulDevReadSequentialPartial;
+    this->execTimeReadSequential += execTimeReadSequentialPartial;    
+
     
     // close file 
     file.close();
@@ -285,6 +314,10 @@ void Benchmark::writeRandom(){
     // open the file    
     file.open(this->testFilePath.c_str(), ios::binary);
     
+    // size to use
+    ulong sizeToUse = sizeRWInMiB ? sizeRWInMiB : 1;
+    ulong amoutToDivideBy = sizeToUse == 1 ? 1024 / sizeRWInKiB : 1;
+    
     // Get the byte total size
     ulong totalSize = this->sizeRepeats * this->magSize;
     
@@ -295,7 +328,7 @@ void Benchmark::writeRandom(){
     //file.register_callback(lastIndexEventForFileWriter, totalSize);
     
     // Set timer set amount MiBs
-    timer.setSetSize(sizeRWInMiB);
+    timer.setSetSize(sizeToUse);
     
     for(ulong gIdx = 0, maxFpos = 0; gIdx < gibs; gIdx++){
         for(ulong mIdx = 0; mIdx < mibs; mIdx++){
@@ -335,11 +368,19 @@ void Benchmark::writeRandom(){
     // Get time of this action
     this->totalTime += timer.totalTime();
         
+    // WriteRandomPartial;
+    // Throughput correction in case of less than 1 MiB and more than 1 KiB
+    throughputWriteRandomPartial = sizeToUse / timer.totalTime() / amoutToDivideBy;
+    execTimeWriteRandomPartial   = timer.totalTime();
+    averageWriteRandomPartial    = timer.averageTime();
+    defaulDevWriteRandomPartial  = timer.defaultDeviation();
+    
     // capture results
-    this->throughputWriteRandom = sizeRWInMiB / timer.totalTime();
-    this->averageWriteRandom = timer.averageTime();
-    this->execTimeWriteRandom = timer.totalTime();
-    this->defaulDevWriteRandom = timer.defaultDeviation();
+    this->throughputWriteRandom += throughputWriteRandomPartial;
+    this->averageWriteRandom += averageWriteRandomPartial;
+    this->execTimeWriteRandom += execTimeWriteRandomPartial;
+    this->defaulDevWriteRandom += defaulDevWriteRandomPartial;   
+
     
     // close file
     file.close();
@@ -357,6 +398,10 @@ void Benchmark::readRandom(){
     ifstream file;
     ulong seek_tmp = 1;
     
+    // size to use
+    ulong sizeToUse = sizeRWInMiB ? sizeRWInMiB : 1;
+    ulong amoutToDivideBy = sizeToUse == 1 ? 1024 / sizeRWInKiB : 1;
+    
     // open the file    
     file.open(this->testFilePath.c_str(), ios::binary);
     
@@ -364,7 +409,7 @@ void Benchmark::readRandom(){
     ulong totalSize = this->sizeRepeats * this->magSize;
         
     // Set timer set amount MiBs
-    timer.setSetSize(sizeRWInMiB);
+    timer.setSetSize(sizeToUse);
     
     // Read from file using bytes as index with file seeks
     for(ulong gIdx = 0, maxFpos; gIdx < gibs; gIdx++){
@@ -403,11 +448,20 @@ void Benchmark::readRandom(){
     // Get time of this action
     this->totalTime += timer.totalTime();
         
+    // Read Random Partial;
+    // Throughput correction in case of less than 1 MiB and more than 1 KiB
+    throughputReadRandomPartial  = sizeToUse / timer.totalTime() / amoutToDivideBy;
+    averageReadRandomPartial     = timer.averageTime();
+    execTimeReadRandomPartial    = timer.totalTime();
+    defaulDevReadRandomPartial   = timer.defaultDeviation();
+    
     // Capture results
-    this->throughputReadRandom = sizeRWInMiB / timer.totalTime();
-    this->averageReadRandom = timer.averageTime();
-    this->execTimeReadRandom = timer.totalTime();
-    this->defaulDevReadRandom = timer.defaultDeviation();
+    this->throughputReadRandom  += throughputReadRandomPartial;
+    this->averageReadRandom     += averageReadRandomPartial;
+    this->execTimeReadRandom    += execTimeReadRandomPartial;
+    this->defaulDevReadRandom   += defaulDevReadRandomPartial;
+
+
     
     // close file
     file.close();

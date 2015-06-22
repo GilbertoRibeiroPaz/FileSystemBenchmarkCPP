@@ -23,7 +23,6 @@ void Timer::stop(){
     useconds = endTime.tv_usec - startTime.tv_usec;
     
     duration = seconds + useconds/1000000.0;
-    
     this->indResult.push_back(duration);
     this->lastDuration = duration;
     this->acumulator += this->lastDuration;
@@ -44,26 +43,29 @@ double Timer::totalTime(){
     return this->acumulator;
 }
 
-void Timer::setSetSize(ulong size){
-    this->indResult.resize(size);
+void Timer::setSetSize(ulong size){    
+    if (size == 0) size = 1;
+    this->indResult.reserve(size);
     this->size = size;
 }
 
-double Timer::averageTime(){
+long double Timer::averageTime(){    
     return this->acumulator / size;
 }
 
 double Timer::variance(){
-    double medium = this->averageTime();
+    double average = this->averageTime();
     double sumSamples = 0;
     
     for(ulong aIdx = 0; aIdx < size; aIdx++){
-        double dev = (indResult[aIdx] - medium);
-        sumSamples += (dev * dev);
+        
+        double diffQuad = pow((indResult[aIdx] - average), 2);
+        sumSamples += diffQuad;
     }
     
     return sumSamples / size;    
 }
 double Timer::defaultDeviation(){
-    return sqrt(this->variance());
+    long double res = sqrtl( this->variance());
+    return res ? res : 0;
 }

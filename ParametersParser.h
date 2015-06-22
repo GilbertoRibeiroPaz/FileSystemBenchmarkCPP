@@ -72,6 +72,11 @@ public:
                 exit(EXIT_FAILURE);
             }
         }
+        
+        if (this->magType == Benchmark::MagGiB && this->timesMag > 8){
+            cout << "Maximum permited value is 8 GiBs" << endl;
+            exit(EXIT_FAILURE);
+        }
     }
     
     /**

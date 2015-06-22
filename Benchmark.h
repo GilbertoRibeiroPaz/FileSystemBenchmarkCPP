@@ -44,6 +44,7 @@ private:
     ulong sizeRepeats;
     ulong repeats;
     ulong sizeRWInMiB;
+    ulong sizeRWInKiB;
     
     ulong gibs;
     ulong mibs;
@@ -78,6 +79,28 @@ private:
     double averageReadRandom;
     double defaulDevReadRandom;
     
+    
+    // ResultPartial;
+    // Write sequentiaPartial;
+    double throughputWriteSequentialPartial;
+    double execTimeWriteSequentialPartial;
+    double averageWriteSequentialPartial;
+    double defaulDevWriteSequentialPartial;
+    // WriteRandomPartial;
+    double throughputWriteRandomPartial;
+    double execTimeWriteRandomPartial;
+    double averageWriteRandomPartial;
+    double defaulDevWriteRandomPartial;
+    // ReadSequentialPartial;
+    double throughputReadSequentialPartial;
+    double execTimeReadSequentialPartial;
+    double averageReadSequentialPartial;
+    double defaulDevReadSequentialPartial;
+    // ReadRandomPartial;
+    double throughputReadRandomPartial;
+    double execTimeReadRandomPartial;
+    double averageReadRandomPartial;
+    double defaulDevReadRandomPartial;
 
     
     std::string testFilePath;

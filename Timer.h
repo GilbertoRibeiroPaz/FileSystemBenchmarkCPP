@@ -23,7 +23,7 @@ private:
 
     timeval startTime;
     double lastDuration;
-    double acumulator;
+    long double acumulator;
     vector<double> indResult;
     ulong size;
     
@@ -36,7 +36,7 @@ public:
     void clear();
     double totalTime();
     void setSetSize(ulong size);
-    double averageTime();
+    long double averageTime();
     double variance();
     double defaultDeviation();
         
