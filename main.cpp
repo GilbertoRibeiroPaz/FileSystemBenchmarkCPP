@@ -14,7 +14,8 @@
 using namespace std;
 
 /*
- * 
+ * Get the paramenters, parse and use it to set
+ * Benchmark environment.
  */
 int main(int argc, char** argv) {
    

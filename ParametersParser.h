@@ -67,12 +67,14 @@ public:
                 this->timesMag += (c -'0');
             }
             else {
+                // Exit on failure of parsing the 3th parameter
                 cout << "Error on 3th parameter. Format accepted: (count)[k|K|m|M|g|G]" << endl;
                 cout << "E.G.: " << argv[0] << " ~/ 1 1G" << endl;
                 exit(EXIT_FAILURE);
             }
         }
         
+        // Exit on failure if the file size is wider than 8GiB
         if (this->magType == Benchmark::MagGiB && this->timesMag > 8){
             cout << "Maximum permited value is 8 GiBs" << endl;
             exit(EXIT_FAILURE);

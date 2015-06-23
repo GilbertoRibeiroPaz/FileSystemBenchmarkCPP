@@ -108,7 +108,7 @@ void Benchmark::run(){
 }
 
 /**
- * Get results produced by benchmark
+ * Print results produced by benchmark
  * @return result
  */
 void Benchmark::getResults(){
@@ -126,6 +126,9 @@ void Benchmark::getResults(){
     cout << endl;
 }
 
+/**
+ * Print partial results
+ */
 void Benchmark::getPartialResults(){
     char title[] = "%20s\t%20s\t%20s\t%20s\t%20s\n";
     char format[] = "%20s\t%20.10f\t%20.10f\t%20.10f\t%20.10f\n";
@@ -244,6 +247,9 @@ void Benchmark::writeSequential(){
     timer.clear();
 }
 
+/**
+ * Read from file byte by byte sequentially
+ */
 void Benchmark::readSequential(){
     
     // file handler
@@ -300,7 +306,9 @@ void Benchmark::readSequential(){
     timer.clear();
 }
 
-
+/**
+ * Write to file randomly
+ */
 void Benchmark::writeRandom(){
     
     // Start 
@@ -389,6 +397,9 @@ void Benchmark::writeRandom(){
     timer.clear();
 }
 
+/**
+ * Read from file randomly.
+ */
 void Benchmark::readRandom(){
         
     // Start 
