@@ -1,3 +1,3 @@
-usage: ./filesystembenchmark <mount point> <repeats> <size and magnitude>
+usage: ./filesystembenchmark \<mount point\> \<repeats\> \<size and magnitude\>
 
-To make the benchmark with 1MiB file: ./filesystembenchmark ~/ 5 1M
+Exemple make the benchmark with 1 MiB file, 5 repeats to home folder: ./filesystembenchmark ~/ 5 1M
